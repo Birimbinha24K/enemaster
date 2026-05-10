@@ -1,5 +1,5 @@
 // ENEMaster — config.js
-// SEM chaves expostas — tudo vai pelo proxy seguro /api/ai
+// SEM chaves expostas — tudo via proxy /api/ai
 
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyDp2CSNyf7FAwDOLx_WhEj_cUm_szzlfj4",
@@ -10,14 +10,15 @@ const FIREBASE_CONFIG = {
   appId:             "1:986725408393:web:57555992d35a306d503058"
 };
 
-// URL do proxy Vercel — chave OpenRouter fica só no servidor
+// Proxy seguro — chave OpenRouter fica só no servidor Vercel
 const AI_PROXY_URL = "/api/ai";
 
-// Modelos gratuitos confirmados no OpenRouter (sem o gemma que não existe)
+// Modelos gratuitos confirmados no OpenRouter (lista atualizada maio/2026)
 const OR_MODELS = [
-  "deepseek/deepseek-r1-0528:free",
-  "deepseek/deepseek-chat-v3-0324:free",
   "meta-llama/llama-3.3-70b-instruct:free",
+  "openai/gpt-oss-20b:free",
+  "nvidia/nemotron-3-nano-30b-a3b:free",
+  "nousresearch/hermes-3-llama-3.1-405b:free",
   "mistralai/mistral-7b-instruct:free",
-  "qwen/qwen-2.5-72b-instruct:free"
+  "meta-llama/llama-3.2-3b-instruct:free"
 ];

@@ -90,13 +90,10 @@
   import { getFirestore, doc, getDoc, setDoc }
                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  function startFirebase() {
-    if (!window.FIREBASE_CONFIG) {
-      setTimeout(startFirebase, 50);
-      return;
-    }
+  // Aguarda o DOM carregar para garantir que config.js e state.js já rodaram
+  document.addEventListener('DOMContentLoaded', function() {
     try {
-      const app  = initializeApp(window.FIREBASE_CONFIG);
+      const app  = initializeApp(FIREBASE_CONFIG);
       const auth = getAuth(app);
       const db   = getFirestore(app);
 
@@ -110,24 +107,15 @@
       window._fbSignOut        = signOut;
       window._fbOnAuth         = onAuthStateChanged;
 
+      // Inicia listener de autenticação — chamado UMA única vez
       if (typeof initFirebase === 'function') initFirebase();
     } catch(e) {
       console.error('Firebase init error:', e);
     }
-  }
-
-  // Start immediately — polls until config.js is ready
-  startFirebase();
+  });
 </script>
 
 <script src="js/config.js"></script>
-<script>
-  window.FIREBASE_CONFIG = FIREBASE_CONFIG;
-  // Dispatch after a tick to ensure state.js listener is registered
-  setTimeout(function() {
-    window.dispatchEvent(new Event("firebaseReady"));
-  }, 0);
-</script>
 <script src="js/conteudos.js"></script>
 <script src="js/state.js"></script>
 <script>

@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════
-// ENEMaster — state.js  (login fix v2)
+// ENEMaster — state.js
+// Progresso + Firebase sync + Auth
 // ═══════════════════════════════════════════
 
 const STATE = {
@@ -12,7 +13,6 @@ const STATE = {
   currentModuleId:  localStorage.getItem('em_curMod')  || null,
 };
 
-// ── Persist locally ──────────────────────────────────────────────────────────
 function persistLocal() {
   localStorage.setItem('em_done',    JSON.stringify(STATE.completedModules));
   localStorage.setItem('em_xp',     STATE.xp);
@@ -30,7 +30,6 @@ function addXP(n) {
   saveCloud();
 }
 
-// ── Nav XP display ───────────────────────────────────────────────────────────
 function updateNavXP() {
   const xpEl = document.getElementById('xp-num');
   const stEl = document.getElementById('streak-num');
@@ -38,7 +37,6 @@ function updateNavXP() {
   if (stEl) stEl.textContent = STATE.streak;
 }
 
-// ── Streak ───────────────────────────────────────────────────────────────────
 function checkStreak() {
   const today = new Date().toDateString();
   const last  = localStorage.getItem('em_last');
@@ -57,7 +55,7 @@ let _syncTimer = null;
 function saveCloud() {
   if (!window._currentUser || !window._fbDb) return;
   clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(async () => {
+  _syncTimer = setTimeout(async function() {
     showToast('syncing');
     try {
       const ref = window._fbDoc(window._fbDb, 'users', window._currentUser.uid);
@@ -110,15 +108,15 @@ function showToast(status) {
   } else if (status === 'saved') {
     el.innerHTML = '<div class="sync-dot"></div> Salvo na nuvem ✓';
     el.style.display = 'flex';
-    _toastT = setTimeout(() => el.style.display = 'none', 2500);
+    _toastT = setTimeout(function() { el.style.display = 'none'; }, 2500);
   } else {
     el.innerHTML = '<div class="sync-dot" style="background:var(--red)"></div> Erro ao sincronizar';
     el.style.display = 'flex';
-    _toastT = setTimeout(() => el.style.display = 'none', 3000);
+    _toastT = setTimeout(function() { el.style.display = 'none'; }, 3000);
   }
 }
 
-// ── Navigation ───────────────────────────────────────────────────────────────
+// ── Navegação ────────────────────────────────────────────────────────────────
 function goHome()      { window.location.href = 'index.html'; }
 function goSubject(id) { STATE.currentSubjectId = id; persistLocal(); window.location.href = 'subject.html'; }
 function goModule(sid, mid) {
@@ -139,9 +137,9 @@ function renderNav(activePage) {
     { key:'simulado', href:'simulado.html', label:'🏆 Simulado' },
     { key:'redacao',  href:'redacao.html',  label:'✍️ Redação'  },
   ];
-  if (STATE.currentModuleId)
+  if (STATE.currentModuleId) {
     links.splice(1, 0, { key:'modulo', href:'modulo.html', label:'📖 Módulo' });
-
+  }
   nav.innerHTML = `
     <a href="index.html" class="nav-logo">ENEM<span>master</span></a>
     <div class="nav-links">
@@ -150,54 +148,44 @@ function renderNav(activePage) {
     <div class="nav-right">
       <div class="streak-chip">🔥 <span id="streak-num">${STATE.streak}</span>d</div>
       <div class="xp-chip">⭐ <span id="xp-num">${STATE.xp} XP</span></div>
-      <div class="auth-avatar" id="auth-avatar" style="display:none;" title=""></div>
+      <div class="auth-avatar" id="auth-avatar" style="display:none;"></div>
       <button class="auth-btn" id="auth-btn" onclick="handleAuthClick()">🔑 Entrar</button>
     </div>`;
 }
 
-// ── Auth click — completely decoupled from onAuthStateChanged ─────────────────
-// Root cause of the bug: calling signInWithPopup() inside onAuthStateChanged
-// callback causes Firebase to cancel the popup immediately. Solution: keep the
-// sign-in trigger completely separate from the auth listener.
+// ── Auth click ────────────────────────────────────────────────────────────────
 function handleAuthClick() {
   if (window._currentUser) {
-    window._fbSignOut(window._fbAuth).catch(e => console.warn('signOut:', e));
+    window._fbSignOut(window._fbAuth).catch(function(e) { console.warn('signOut:', e); });
   } else {
     doLogin();
   }
 }
 
 async function doLogin() {
-  // Wait up to 3s for Firebase to initialize before giving up
-  if (!window._fbAuth || !window._fbGoogleProvider) {
-    const btn = document.getElementById('auth-btn');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Carregando...'; }
-    let tries = 0;
-    while ((!window._fbAuth || !window._fbGoogleProvider) && tries < 30) {
-      await new Promise(r => setTimeout(r, 100));
-      tries++;
-    }
-    if (!window._fbAuth || !window._fbGoogleProvider) {
-      if (btn) { btn.disabled = false; btn.textContent = '🔑 Entrar'; }
-      alert('Erro ao carregar autenticação. Recarregue a página.');
-      return;
-    }
-    if (btn) { btn.disabled = false; btn.textContent = '🔑 Entrar'; }
+  const btn = document.getElementById('auth-btn');
+
+  // Aguarda Firebase estar pronto (máx 3s)
+  let tries = 0;
+  while ((!window._fbAuth || !window._fbGoogleProvider) && tries < 30) {
+    await new Promise(function(r) { setTimeout(r, 100); });
+    tries++;
   }
 
-  const btn = document.getElementById('auth-btn');
+  if (!window._fbAuth || !window._fbGoogleProvider) {
+    alert('Erro ao carregar autenticação. Recarregue a página.');
+    return;
+  }
+
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Entrando...'; }
 
   try {
     const provider = new window._fbGoogleProvider();
-    // prompt:'select_account' forces the Google account picker to always appear
-    // and prevents the popup from auto-closing on some browsers/configurations
     provider.setCustomParameters({ prompt: 'select_account' });
     await window._fbSignIn(window._fbAuth, provider);
-    // Success: onAuthStateChanged will fire automatically with the user object
+    // onAuthStateChanged cuida do resto
   } catch(e) {
     if (btn) { btn.disabled = false; btn.textContent = '🔑 Entrar'; }
-    // Silently ignore user closing the popup — that is expected behavior
     const ignored = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'];
     if (!ignored.includes(e.code)) {
       console.warn('Login error:', e.code, e.message);
@@ -206,22 +194,21 @@ async function doLogin() {
   }
 }
 
-// ── Firebase auth listener — only handles state UI, never triggers popups ────
-let _authInitialized = false;
+// ── Firebase auth listener ────────────────────────────────────────────────────
+// REGRA: initFirebase() é chamado UMA VEZ pelo module script (via DOMContentLoaded)
+// O banner de login SÓ aparece depois que o estado auth é confirmado como null
+let _authResolved = false;
 
 function initFirebase() {
-  if (!window._fbAuth || _authInitialized) return;
-  _authInitialized = true;
+  if (!window._fbOnAuth || !window._fbAuth) return;
 
-  let _resolved = false; // Track if auth state has resolved at least once
-
-  window._fbOnAuth(window._fbAuth, async (user) => {
+  window._fbOnAuth(window._fbAuth, async function(user) {
     window._currentUser = user || null;
     const btn    = document.getElementById('auth-btn');
     const avatar = document.getElementById('auth-avatar');
 
     if (user) {
-      // ── User is signed in ──
+      // ── Logado ──
       await loadCloud(user.uid);
       updateNavXP();
 
@@ -231,43 +218,38 @@ function initFirebase() {
         avatar.textContent   = (user.displayName || user.email || 'U')[0].toUpperCase();
         avatar.title         = user.displayName || user.email || '';
       }
+      // Esconde banner imediatamente
       hideBanner();
 
-      // Notify page that auth is ready (used for re-rendering data)
       if (typeof onAuthReady === 'function') onAuthReady(user);
 
     } else {
-      // ── User is signed out ──
+      // ── Não logado ──
       if (btn)    { btn.disabled = false; btn.textContent = '🔑 Entrar'; }
       if (avatar) { avatar.style.display = 'none'; }
 
-      // Only show the login banner after auth state has been confirmed as null
-      // (prevents flash of banner on pages where user IS logged in)
-      if (_resolved) showBanner();
+      // Mostra o banner SOMENTE após confirmar que não há usuário
+      // Isso evita o "flash" ao navegar entre páginas quando está logado
+      if (_authResolved) {
+        showBanner();
+      }
     }
 
-    // After first resolution, we know the true auth state
-    if (!_resolved) {
-      _resolved = true;
-      if (!user) showBanner(); // Show banner now that we know user is null
+    if (!_authResolved) {
+      _authResolved = true;
+      // Primeira resolução — se não há usuário, mostra o banner agora
+      if (!user) showBanner();
     }
   });
 }
 
-let _bannerTimer = null;
+// Banner — sem delay para evitar piscar quando logado
+// O banner só aparece quando _authResolved = true e user = null
 function showBanner() {
-  // Small delay prevents flash during page navigation when user IS logged in
-  // (Firebase takes ~200-400ms to confirm auth state on page load)
-  clearTimeout(_bannerTimer);
-  _bannerTimer = setTimeout(() => {
-    if (!window._currentUser) {
-      const b = document.getElementById('login-banner');
-      if (b) b.style.display = 'flex';
-    }
-  }, 500);
+  const b = document.getElementById('login-banner');
+  if (b) b.style.display = 'flex';
 }
 function hideBanner() {
-  clearTimeout(_bannerTimer);
   const b = document.getElementById('login-banner');
   if (b) b.style.display = 'none';
 }
