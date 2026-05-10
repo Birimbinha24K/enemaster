@@ -168,9 +168,21 @@ function handleAuthClick() {
 }
 
 async function doLogin() {
+  // Wait up to 3s for Firebase to initialize before giving up
   if (!window._fbAuth || !window._fbGoogleProvider) {
-    alert('Firebase ainda inicializando. Aguarde 1 segundo e tente novamente.');
-    return;
+    const btn = document.getElementById('auth-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Carregando...'; }
+    let tries = 0;
+    while ((!window._fbAuth || !window._fbGoogleProvider) && tries < 30) {
+      await new Promise(r => setTimeout(r, 100));
+      tries++;
+    }
+    if (!window._fbAuth || !window._fbGoogleProvider) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔑 Entrar'; }
+      alert('Erro ao carregar autenticação. Recarregue a página.');
+      return;
+    }
+    if (btn) { btn.disabled = false; btn.textContent = '🔑 Entrar'; }
   }
 
   const btn = document.getElementById('auth-btn');

@@ -10,14 +10,14 @@ const FIREBASE_CONFIG = {
   appId:             "1:986725408393:web:57555992d35a306d503058"
 };
 
-// URL do proxy Vercel — a chave OpenRouter fica só no servidor
+// URL do proxy Vercel — chave OpenRouter fica só no servidor
 const AI_PROXY_URL = "/api/ai";
 
-// Modelos gratuitos em ordem de preferência
+// Modelos gratuitos confirmados no OpenRouter (sem o gemma que não existe)
 const OR_MODELS = [
   "deepseek/deepseek-r1-0528:free",
   "deepseek/deepseek-chat-v3-0324:free",
   "meta-llama/llama-3.3-70b-instruct:free",
   "mistralai/mistral-7b-instruct:free",
-  "google/gemma-3-27b-it:free"
+  "qwen/qwen-2.5-72b-instruct:free"
 ];

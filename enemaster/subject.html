@@ -82,34 +82,49 @@
 </div>
 
 <script type="module">
-  import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-                                                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc }
+                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // FIREBASE_CONFIG is defined in js/config.js loaded below as a regular script.
-  // We wait for DOMContentLoaded to ensure config.js has run first.
-  window.addEventListener('firebaseReady', () => {
-    const app  = initializeApp(window.FIREBASE_CONFIG);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
+  function startFirebase() {
+    if (!window.FIREBASE_CONFIG) {
+      setTimeout(startFirebase, 50);
+      return;
+    }
+    try {
+      const app  = initializeApp(window.FIREBASE_CONFIG);
+      const auth = getAuth(app);
+      const db   = getFirestore(app);
 
-    window._fbAuth            = auth;
-    window._fbDb              = db;
-    window._fbDoc             = doc;
-    window._fbGetDoc          = getDoc;
-    window._fbSetDoc          = setDoc;
-    window._fbGoogleProvider  = GoogleAuthProvider;
-    window._fbSignIn          = signInWithPopup;
-    window._fbSignOut         = signOut;
-    window._fbOnAuth          = onAuthStateChanged;
+      window._fbAuth           = auth;
+      window._fbDb             = db;
+      window._fbDoc            = doc;
+      window._fbGetDoc         = getDoc;
+      window._fbSetDoc         = setDoc;
+      window._fbGoogleProvider = GoogleAuthProvider;
+      window._fbSignIn         = signInWithPopup;
+      window._fbSignOut        = signOut;
+      window._fbOnAuth         = onAuthStateChanged;
 
-    // Init auth listener immediately — no delay needed
-    if (typeof initFirebase === 'function') initFirebase();
-  });
+      if (typeof initFirebase === 'function') initFirebase();
+    } catch(e) {
+      console.error('Firebase init error:', e);
+    }
+  }
+
+  // Start immediately — polls until config.js is ready
+  startFirebase();
 </script>
 <script src="js/config.js"></script>
-<script>window.FIREBASE_CONFIG=FIREBASE_CONFIG;window.dispatchEvent(new Event("firebaseReady"));</script>
+<script>
+  window.FIREBASE_CONFIG = FIREBASE_CONFIG;
+  // Dispatch after a tick to ensure state.js listener is registered
+  setTimeout(function() {
+    window.dispatchEvent(new Event("firebaseReady"));
+  }, 0);
+</script>
 <script src="js/conteudos.js"></script>
 <script src="js/state.js"></script>
 <script>
