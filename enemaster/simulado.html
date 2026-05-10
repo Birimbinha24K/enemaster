@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENEMaster — Simulado</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* ── SELECTOR ── */
+.selector-page{max-width:700px;margin:0 auto;padding:3rem 2rem;}
+.selector-page h1{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;letter-spacing:-0.04em;margin-bottom:0.5rem;}
+.selector-page p{color:var(--text2);font-size:0.92rem;margin-bottom:2rem;}
+.subj-pick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.85rem;margin-bottom:2rem;}
+.subj-pick{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:1.1rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.85rem;}
+.subj-pick:hover{border-color:var(--border2);}
+.subj-pick.selected{border-color:var(--accent);background:rgba(59,130,246,0.06);}
+.subj-pick .pick-icon{font-size:1.75rem;}
+.subj-pick .pick-name{font-weight:700;font-size:0.92rem;}
+.subj-pick .pick-mods{font-size:0.75rem;color:var(--text3);margin-top:0.15rem;}
+.sim-config-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.sim-config-label{font-size:0.85rem;font-weight:600;color:var(--text2);}
+.sim-config-select{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:0.45rem 0.85rem;font-size:0.85rem;font-family:'Instrument Sans',sans-serif;}
+
+/* ── SIMULADO LAYOUT ── */
+.sim-layout{display:flex;min-height:calc(100vh - 58px);}
+.sim-sb{width:210px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);padding:1.1rem;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;}
+.sim-timer-box{text-align:center;margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border);}
+.sim-timer-lbl{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:0.3rem;}
+.sim-timer-num{font-family:'Fraunces',serif;font-size:1.85rem;font-weight:900;color:var(--orange);transition:color 0.3s;letter-spacing:-0.03em;}
+.sim-timer-num.urgent{color:var(--red);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.sim-area-section{margin-bottom:1rem;}
+.sim-area-row{display:flex;justify-content:space-between;font-size:0.74rem;margin-bottom:0.4rem;}
+.sim-area-name{color:var(--text2);font-weight:600;}
+.sim-area-score{color:var(--text3);}
+.sim-area-bar{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-bottom:0.65rem;}
+.sim-area-fill{height:100%;border-radius:99px;background:var(--accent);}
+.sq-grid{display:flex;flex-wrap:wrap;gap:3px;}
+.sq-dot{width:26px;height:26px;border-radius:5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;background:var(--surface3);color:var(--text3);transition:all 0.15s;}
+.sq-dot.ans{background:rgba(59,130,246,0.15);color:var(--accent);}
+.sq-dot.cur{background:var(--accent);color:#fff;}
+.sim-sb-lbl{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin:0.85rem 0 0.4rem;}
+
+.sim-main{flex:1;min-width:0;padding:1.75rem;}
+.sim-q-wrap{max-width:740px;margin:0 auto;}
+.sim-area-lbl{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:1.25rem;}
+.sim-nav{display:flex;justify-content:space-between;margin-top:1.25rem;gap:1rem;}
+
+/* ── RESULTS ── */
+.sim-res-page{max-width:860px;margin:0 auto;padding:2.25rem 2rem;}
+.sim-overall{text-align:center;padding:2.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1.75rem;}
+.sim-big-score{font-family:'Fraunces',serif;font-size:4.5rem;font-weight:900;letter-spacing:-0.05em;margin-bottom:0.2rem;}
+.sim-area-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.85rem;margin-bottom:1.75rem;}
+.sim-ac{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;}
+.sim-ac-title{font-weight:700;font-size:0.84rem;margin-bottom:0.55rem;}
+.sim-ac-score{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:900;margin-bottom:0.25rem;}
+.sim-ac-bar{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;}
+.sim-ac-fill{height:100%;border-radius:99px;}
+.sugg-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem;margin-bottom:1.5rem;}
+.sugg-title{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;margin-bottom:0.85rem;}
+.sugg-item{display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:var(--surface2);border-radius:var(--r2);margin-bottom:0.5rem;font-size:0.83rem;color:var(--text2);}
+.sugg-item strong{color:var(--text);}
+
+@media(max-width:900px){
+  .sim-layout{flex-direction:column;}
+  .sim-sb{width:100%;height:auto;position:relative;top:0;border-right:none;border-bottom:1px solid var(--border);}
+  .subj-pick-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<nav id="nav"></nav>
+
+<!-- SELECTOR -->
+<div id="selector-view" class="page-wrap">
+  <div class="selector-page fade-up">
+    <h1>🏆 Simulado ENEM</h1>
+    <p>Escolha a matéria e configure seu simulado. As questões são geradas por IA no estilo oficial do ENEM.</p>
+
+    <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:700;margin-bottom:0.85rem;">Escolha a matéria:</div>
+    <div class="subj-pick-grid" id="subj-pick-grid"></div>
+
+    <div class="sim-config-row">
+      <span class="sim-config-label">Quantidade de questões:</span>
+      <select class="sim-config-select" id="q-count-select">
+        <option value="10">10 questões (treino)</option>
+        <option value="20" selected>20 questões (padrão)</option>
+        <option value="30">30 questões (intensivo)</option>
+        <option value="45">45 questões (ENEM completo)</option>
+      </select>
+    </div>
+
+    <div class="sim-config-row">
+      <span class="sim-config-label">Tempo disponível:</span>
+      <select class="sim-config-select" id="time-select">
+        <option value="60">1 hora</option>
+        <option value="180">3 horas</option>
+        <option value="330" selected>5h30 (oficial)</option>
+      </select>
+    </div>
+
+    <button class="btn btn-p btn-lg btn-full" id="start-btn" onclick="iniciarSimulado()" disabled
+      style="margin-top:0.5rem;">
+      Selecione uma matéria para começar
+    </button>
+
+    <div class="callout tip" style="margin-top:1.5rem;">
+      <div class="c-icon">💡</div>
+      <div class="c-body">
+        <div class="c-title">Dica de Simulado</div>
+        <div class="c-text">No ENEM real você tem 5h30 para 45 questões. Pratique sem pausar e sem consultar o conteúdo — simule as condições reais de prova!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading-view" class="page-wrap hidden">
+  <div class="loading-box" style="padding:6rem 2rem;">
+    <div class="dots"><span></span><span></span><span></span></div>
+    <p style="margin-top:1rem;font-size:1rem;">Gerando simulado com Gemini AI...<br><span style="font-size:0.85rem;color:var(--text3);">Isso pode levar alguns segundos</span></p>
+  </div>
+</div>
+
+<!-- SIMULADO -->
+<div id="sim-view" class="hidden">
+  <div class="sim-layout">
+    <div class="sim-sb">
+      <div class="sim-timer-box">
+        <div class="sim-timer-lbl">Tempo restante</div>
+        <div class="sim-timer-num" id="sim-timer">00:00:00</div>
+      </div>
+      <div class="sim-area-section" id="sim-area-prog"></div>
+      <div class="sim-sb-lbl">Questões</div>
+      <div class="sq-grid" id="sq-grid"></div>
+      <div style="margin-top:1rem;">
+        <button class="btn btn-r btn-full btn-sm" onclick="confirmFinish()">Encerrar Prova</button>
+      </div>
+    </div>
+    <div class="sim-main">
+      <div class="sim-q-wrap">
+        <div class="sim-area-lbl" id="sim-area-lbl"></div>
+        <div id="sim-q-area"></div>
+        <div class="sim-nav">
+          <button class="btn btn-s" id="sim-prev" onclick="simNav(-1)">← Anterior</button>
+          <button class="btn btn-p" id="sim-next" onclick="simNav(1)">Próxima →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results-view" class="page-wrap hidden"></div>
+
+<script type="module">
+  import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+                                                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // FIREBASE_CONFIG is defined in js/config.js loaded below as a regular script.
+  // We wait for DOMContentLoaded to ensure config.js has run first.
+  window.addEventListener('firebaseReady', () => {
+    const app  = initializeApp(window.FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    window._fbAuth            = auth;
+    window._fbDb              = db;
+    window._fbDoc             = doc;
+    window._fbGetDoc          = getDoc;
+    window._fbSetDoc          = setDoc;
+    window._fbGoogleProvider  = GoogleAuthProvider;
+    window._fbSignIn          = signInWithPopup;
+    window._fbSignOut         = signOut;
+    window._fbOnAuth          = onAuthStateChanged;
+
+    // Init auth listener immediately — no delay needed
+    if (typeof initFirebase === 'function') initFirebase();
+  });
+</script>
+<script src="js/config.js"></script>
+<script>window.FIREBASE_CONFIG=FIREBASE_CONFIG;window.dispatchEvent(new Event("firebaseReady"));</script>
+<script src="js/conteudos.js"></script>
+<script src="js/state.js"></script>
+<script src="js/gemini.js"></script>
+<script>
+renderNav('simulado');
+checkStreak();
+let selectedSubjId = STATE.currentSubjectId || null;
+let simState = null;
+let timerInterval = null;
+
+// ── SELECTOR ────────────────────────────────────────────────────────────────
+function renderSelector() {
+  const grid = document.getElementById('subj-pick-grid');
+  grid.innerHTML = SUBJECTS.map(s => {
+    const sel = s.id === selectedSubjId ? 'selected' : '';
+    return `<div class="subj-pick ${sel}" onclick="selectSubj('${s.id}')">
+      <div class="pick-icon">${s.icon}</div>
+      <div>
+        <div class="pick-name">${s.name}</div>
+        <div class="pick-mods">${s.modules.length} módulos</div>
+      </div>
+    </div>`;
+  }).join('');
+  updateStartBtn();
+}
+
+function selectSubj(id) {
+  selectedSubjId = id;
+  renderSelector();
+}
+
+function updateStartBtn() {
+  const btn = document.getElementById('start-btn');
+  if (selectedSubjId) {
+    const s = SUBJECTS.find(s => s.id === selectedSubjId);
+    btn.disabled = false;
+    btn.textContent = `Iniciar Simulado — ${s.name} →`;
+  } else {
+    btn.disabled = true;
+    btn.textContent = 'Selecione uma matéria para começar';
+  }
+}
+
+renderSelector();
+
+// ── START ────────────────────────────────────────────────────────────────────
+async function iniciarSimulado() {
+  if (!selectedSubjId) return;
+  const subj  = SUBJECTS.find(s => s.id === selectedSubjId);
+  const count = parseInt(document.getElementById('q-count-select').value);
+  const mins  = parseInt(document.getElementById('time-select').value);
+
+  document.getElementById('selector-view').classList.add('hidden');
+  document.getElementById('loading-view').classList.remove('hidden');
+
+  try {
+    const questions = await generateSimulado(subj.name, subj.modules, count);
+    simState = {
+      subj, questions, answers: {}, current: 0,
+      timeLeft: mins * 60,
+    };
+    document.getElementById('loading-view').classList.add('hidden');
+    document.getElementById('sim-view').classList.remove('hidden');
+    renderSim();
+    startTimer();
+  } catch(e) {
+    document.getElementById('loading-view').classList.add('hidden');
+    document.getElementById('selector-view').classList.remove('hidden');
+    alert('Erro ao gerar simulado: ' + e.message.slice(0, 200) + '\nVerifique sua conexão.');
+  }
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function renderSim() {
+  const s = simState;
+  const q = s.questions[s.current];
+  const letters = ['A','B','C','D','E'];
+  const ans = s.answers[s.current];
+
+  // Q dots
+  document.getElementById('sq-grid').innerHTML = s.questions.map((_, i) => {
+    const cls = i === s.current ? 'cur' : s.answers[i] !== undefined ? 'ans' : '';
+    return `<button class="sq-dot ${cls}" onclick="simGoTo(${i})">${i+1}</button>`;
+  }).join('');
+
+  // Area progress
+  const byTopic = {};
+  s.questions.forEach((q2, i) => {
+    const t = q2.topic || 'Geral';
+    if (!byTopic[t]) byTopic[t] = { tot: 0, done: 0 };
+    byTopic[t].tot++;
+    if (s.answers[i] !== undefined) byTopic[t].done++;
+  });
+  document.getElementById('sim-area-prog').innerHTML = Object.entries(byTopic).slice(0, 6).map(([t, v]) => `
+    <div class="sim-area-row"><span class="sim-area-name">${t.slice(0, 22)}</span><span class="sim-area-score">${v.done}/${v.tot}</span></div>
+    <div class="sim-area-bar"><div class="sim-area-fill" style="width:${Math.round(v.done/v.tot*100)}%"></div></div>
+  `).join('');
+
+  document.getElementById('sim-area-lbl').textContent =
+    `Questão ${s.current+1} de ${s.questions.length}  ·  ${q.topic || s.subj.name}  ·  ${q.difficulty || 'médio'}`;
+
+  document.getElementById('sim-q-area').innerHTML = `
+    <div class="q-card fade-in">
+      ${q.context ? `<div class="q-ctx">${q.context}</div>` : ''}
+      <div class="q-stem">${q.stem}</div>
+      <div class="opts">
+        ${q.options.map((opt, i) => `
+          <button class="opt ${ans === i ? 'show-ok' : ''}" onclick="simAnswer(${i})">
+            <div class="opt-l">${letters[i]}</div>
+            <div class="opt-t">${opt}</div>
+          </button>`).join('')}
+      </div>
+    </div>`;
+
+  document.getElementById('sim-prev').disabled = s.current === 0;
+  const isLast = s.current === s.questions.length - 1;
+  document.getElementById('sim-next').textContent = isLast ? 'Encerrar →' : 'Próxima →';
+  document.getElementById('sim-next').onclick = isLast ? confirmFinish : () => simNav(1);
+}
+
+function simAnswer(idx) {
+  simState.answers[simState.current] = idx;
+  renderSim();
+}
+function simNav(d) {
+  simState.current = Math.max(0, Math.min(simState.questions.length - 1, simState.current + d));
+  renderSim();
+}
+function simGoTo(i) { simState.current = i; renderSim(); }
+
+// ── TIMER ────────────────────────────────────────────────────────────────────
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    simState.timeLeft--;
+    const t = simState.timeLeft;
+    if (t <= 0) { clearInterval(timerInterval); finishSim(); return; }
+    const h  = String(Math.floor(t / 3600)).padStart(2, '0');
+    const m2 = String(Math.floor((t % 3600) / 60)).padStart(2, '0');
+    const s2 = String(t % 60).padStart(2, '0');
+    const el = document.getElementById('sim-timer');
+    if (el) { el.textContent = `${h}:${m2}:${s2}`; el.classList.toggle('urgent', t < 300); }
+  }, 1000);
+}
+
+function confirmFinish() {
+  const ans = Object.keys(simState.answers).length;
+  const tot = simState.questions.length;
+  if (ans < tot && !confirm(`Você respondeu ${ans} de ${tot} questões. Encerrar mesmo assim?`)) return;
+  clearInterval(timerInterval);
+  finishSim();
+}
+
+// ── RESULTS ──────────────────────────────────────────────────────────────────
+function finishSim() {
+  clearInterval(timerInterval);
+  const s = simState;
+  const qs = s.questions;
+  const correct = qs.filter((q, i) => s.answers[i] === q.correct).length;
+  const total   = qs.length;
+  const pct     = Math.round(correct / total * 100);
+  const timeUsed = (parseInt(document.getElementById('time-select')?.value || 330) * 60) - s.timeLeft;
+  const h = Math.floor(timeUsed / 3600);
+  const m2 = Math.floor((timeUsed % 3600) / 60);
+  const sc = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--orange)' : 'var(--red)';
+
+  // By topic
+  const byTopic = {};
+  qs.forEach((q, i) => {
+    const t = q.topic || 'Geral';
+    if (!byTopic[t]) byTopic[t] = { c: 0, tot: 0 };
+    byTopic[t].tot++;
+    if (s.answers[i] === q.correct) byTopic[t].c++;
+  });
+
+  const weakTopics = Object.entries(byTopic)
+    .filter(([, v]) => v.c / v.tot < 0.5)
+    .sort((a, b) => (a[1].c/a[1].tot) - (b[1].c/b[1].tot))
+    .slice(0, 5);
+
+  document.getElementById('sim-view').classList.add('hidden');
+  const res = document.getElementById('results-view');
+  res.classList.remove('hidden');
+  res.innerHTML = `<div class="sim-res-page fade-up">
+    <div class="sim-overall">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:0.4rem;">Resultado Final — ${s.subj.name}</div>
+      <div class="sim-big-score" style="color:${sc}">${pct}%</div>
+      <div style="font-size:1rem;color:var(--text2);margin-bottom:0.35rem;">${correct} de ${total} questões corretas</div>
+      <div style="font-size:0.8rem;color:var(--text3);">Tempo utilizado: ${h}h ${m2}min</div>
+    </div>
+
+    <h2 style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:700;margin-bottom:0.85rem;letter-spacing:-0.03em;">📊 Desempenho por tópico</h2>
+    <div class="sim-area-cards">
+      ${Object.entries(byTopic).map(([t, v]) => {
+        const p = Math.round(v.c / v.tot * 100);
+        const c = p >= 70 ? 'var(--green)' : p >= 50 ? 'var(--orange)' : 'var(--red)';
+        return `<div class="sim-ac">
+          <div class="sim-ac-title">${t}</div>
+          <div class="sim-ac-score" style="color:${c}">${p}%</div>
+          <div style="font-size:0.74rem;color:var(--text3);margin-bottom:0.4rem;">${v.c}/${v.tot} corretas</div>
+          <div class="sim-ac-bar"><div class="sim-ac-fill" style="width:${p}%;background:${c}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    ${weakTopics.length ? `
+    <div class="sugg-box">
+      <div class="sugg-title">📚 Pontos a reforçar</div>
+      ${weakTopics.map(([t, v]) => `
+        <div class="sugg-item">⚠️ <div><strong>${t}:</strong> ${Math.round(v.c/v.tot*100)}% de acerto. Revise este tópico nos módulos de estudo.</div>
+        </div>`).join('')}
+    </div>` : `
+    <div class="callout ok"><div class="c-icon">🏆</div><div class="c-body"><div class="c-title">Excelente desempenho!</div><div class="c-text">Você teve bom desempenho em todos os tópicos!</div></div></div>`}
+
+    <div style="display:flex;gap:0.75rem;justify-content:center;margin-top:1.75rem;flex-wrap:wrap;">
+      <button class="btn btn-s btn-lg" onclick="location.reload()">🔄 Novo Simulado</button>
+      <button class="btn btn-p btn-lg" onclick="goHome()">← Início</button>
+    </div>
+  </div>`;
+
+  addXP(correct * 10 + 50);
+  saveCloud?.();
+}
+</script>
+</body>
+</html>

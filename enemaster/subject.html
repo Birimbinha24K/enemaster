@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENEMaster — Matéria</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.subj-header{padding:1.75rem 2rem 0;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);}
+.breadcrumb{display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--text3);cursor:pointer;margin-bottom:1rem;background:none;border:none;padding:0;}
+.breadcrumb:hover{color:var(--accent);}
+.subj-title-row{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;}
+.subj-icon-big{font-size:2.6rem;line-height:1;}
+.subj-title{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;letter-spacing:-0.04em;}
+.subj-subtitle{font-size:0.87rem;color:var(--text2);margin-top:0.25rem;}
+.subj-progress-row{display:flex;align-items:center;gap:1rem;margin-top:0.5rem;}
+.subj-prog-bar{flex:1;height:4px;background:var(--surface3);border-radius:99px;overflow:hidden;max-width:200px;}
+.subj-prog-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.5s;}
+.subj-prog-txt{font-size:0.78rem;color:var(--text2);}
+
+.mods-container{max-width:860px;margin:0 auto;padding:1.75rem 2rem;}
+.mods-section-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--text2);margin-bottom:0.85rem;}
+
+.mod-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:0.65rem;overflow:hidden;transition:all 0.2s;}
+.mod-card:not(.locked):hover{border-color:var(--border2);box-shadow:0 4px 20px rgba(0,0,0,0.3);cursor:pointer;}
+.mod-card-inner{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.35rem;}
+.mod-card.locked .mod-card-inner{opacity:0.45;cursor:not-allowed;}
+.mod-num{width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:0.88rem;font-weight:900;}
+.mod-num.done{background:rgba(16,185,129,0.12);color:var(--green);}
+.mod-num.cur{background:rgba(59,130,246,0.12);color:var(--accent);}
+.mod-num.lock{background:var(--surface2);color:var(--text3);}
+.mod-info{flex:1;min-width:0;}
+.mod-name{font-weight:700;font-size:0.92rem;margin-bottom:0.12rem;}
+.mod-desc{font-size:0.78rem;color:var(--text2);line-height:1.4;}
+.mod-tags{display:flex;gap:0.4rem;margin-top:0.35rem;flex-wrap:wrap;}
+.mod-tag{font-size:0.67rem;font-weight:700;padding:0.13rem 0.42rem;border-radius:4px;background:var(--surface2);color:var(--text3);}
+.mod-status{font-size:1rem;flex-shrink:0;}
+
+.unlock-banner{margin:1.25rem 0;padding:1.35rem;border-radius:var(--r);background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(59,130,246,0.05));border:1px solid rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.unlock-banner h3{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;margin-bottom:0.25rem;}
+.unlock-banner p{font-size:0.81rem;color:var(--text2);}
+</style>
+</head>
+<body>
+
+<nav id="nav"></nav>
+
+<div class="page-wrap fade-up">
+  <div class="subj-header">
+    <button class="breadcrumb" onclick="goHome()">← Início</button>
+    <div class="subj-title-row">
+      <div class="subj-icon-big" id="subj-icon"></div>
+      <div>
+        <div class="subj-title" id="subj-title"></div>
+        <div class="subj-subtitle" id="subj-subtitle"></div>
+        <div class="subj-progress-row">
+          <div class="subj-prog-bar"><div class="subj-prog-fill" id="subj-prog-fill" style="width:0%"></div></div>
+          <span class="subj-prog-txt" id="subj-prog-txt">0 de 0 módulos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mods-container">
+    <div class="login-banner" id="login-banner" style="display:none;margin-bottom:1.25rem;">
+      <p>☁️ <strong>Entre com o Google</strong> para salvar seu progresso em qualquer dispositivo.</p>
+      <button class="auth-btn" onclick="handleAuthClick()">🔑 Entrar</button>
+    </div>
+
+    <div class="mods-section-title" id="mods-label"></div>
+    <div id="mods-list"></div>
+
+    <div id="unlock-banner" class="unlock-banner hidden">
+      <div>
+        <h3>🏆 Simulado Desbloqueado!</h3>
+        <p>Você concluiu todos os módulos. Faça o simulado completo!</p>
+      </div>
+      <button class="btn btn-g btn-lg" onclick="goSimulado()">Iniciar Simulado →</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+                                                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // FIREBASE_CONFIG is defined in js/config.js loaded below as a regular script.
+  // We wait for DOMContentLoaded to ensure config.js has run first.
+  window.addEventListener('firebaseReady', () => {
+    const app  = initializeApp(window.FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    window._fbAuth            = auth;
+    window._fbDb              = db;
+    window._fbDoc             = doc;
+    window._fbGetDoc          = getDoc;
+    window._fbSetDoc          = setDoc;
+    window._fbGoogleProvider  = GoogleAuthProvider;
+    window._fbSignIn          = signInWithPopup;
+    window._fbSignOut         = signOut;
+    window._fbOnAuth          = onAuthStateChanged;
+
+    // Init auth listener immediately — no delay needed
+    if (typeof initFirebase === 'function') initFirebase();
+  });
+</script>
+<script src="js/config.js"></script>
+<script>window.FIREBASE_CONFIG=FIREBASE_CONFIG;window.dispatchEvent(new Event("firebaseReady"));</script>
+<script src="js/conteudos.js"></script>
+<script src="js/state.js"></script>
+<script>
+renderNav('home');
+checkStreak();
+const sid = STATE.currentSubjectId;
+const subj = SUBJECTS.find(s => s.id === sid);
+
+if (!subj) { alert('Matéria não encontrada.'); goHome(); }
+else {
+  document.getElementById('subj-icon').textContent    = subj.icon;
+  document.getElementById('subj-title').textContent   = subj.name;
+  document.getElementById('subj-subtitle').textContent = subj.desc;
+
+  function renderMods() {
+    const total = subj.modules.length;
+    const done  = subj.modules.filter(m => STATE.completedModules[m.id]).length;
+    const pct   = Math.round(done / total * 100);
+    document.getElementById('subj-prog-fill').style.width = pct + '%';
+    document.getElementById('subj-prog-txt').textContent  = `${done} de ${total} módulos · ${pct}%`;
+    document.getElementById('mods-label').textContent     = `${done} de ${total} módulos concluídos`;
+
+    document.getElementById('mods-list').innerHTML = subj.modules.map((m, i) => {
+      const done2  = STATE.completedModules[m.id];
+      const locked = i > 0 && !STATE.completedModules[subj.modules[i-1].id];
+      const nc     = done2 ? 'done' : locked ? 'lock' : 'cur';
+      const nt     = done2 ? '✓'   : locked ? '🔒'   : (i+1);
+      const si     = done2 ? '✅'  : locked ? '🔒'   : '▶';
+      return `<div class="mod-card ${locked ? 'locked' : ''}" onclick="${locked ? '' : `goModule('${sid}','${m.id}')`}">
+        <div class="mod-card-inner">
+          <div class="mod-num ${nc}">${nt}</div>
+          <div class="mod-info">
+            <div class="mod-name">${m.title}</div>
+            <div class="mod-desc">${m.summary}</div>
+            <div class="mod-tags">
+              <span class="mod-tag">${m.level}</span>
+              ${m.tags.map(t => `<span class="mod-tag">${t}</span>`).join('')}
+            </div>
+          </div>
+          <div class="mod-status">${si}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const allDone = subj.modules.every(m => STATE.completedModules[m.id]);
+    document.getElementById('unlock-banner').classList.toggle('hidden', !allDone);
+  }
+
+  renderMods();
+  function onAuthReady() { renderMods(); }
+}
+</script>
+</body>
+</html>

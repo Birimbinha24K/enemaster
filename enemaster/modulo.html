@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENEMaster — Módulo</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* ── LAYOUT ── */
+.content-layout{display:flex;min-height:calc(100vh - 58px);}
+.sidebar{width:252px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;padding:1.25rem 0.85rem;}
+.sb-back{display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--text3);cursor:pointer;margin-bottom:1.1rem;padding:0.35rem 0.5rem;border-radius:6px;transition:all 0.15s;background:none;border:none;}
+.sb-back:hover{color:var(--accent);background:rgba(59,130,246,0.06);}
+.sb-mod-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:0.65rem;padding:0 0.2rem;}
+.toc-link{display:block;padding:0.35rem 0.65rem;border-radius:6px;font-size:0.79rem;color:var(--text2);cursor:pointer;transition:all 0.15s;margin-bottom:0.08rem;border-left:2px solid transparent;background:none;border-top:none;border-right:none;border-bottom:none;width:100%;text-align:left;}
+.toc-link:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+.toc-link.active{color:var(--accent);border-left-color:var(--accent);background:rgba(59,130,246,0.06);}
+.sb-divider{height:1px;background:var(--border);margin:0.85rem 0;}
+.sb-quiz-btn{width:100%;padding:0.6rem;border-radius:8px;border:none;cursor:pointer;background:var(--accent);color:#fff;font-weight:700;font-size:0.83rem;transition:all 0.2s;font-family:'Instrument Sans',sans-serif;}
+.sb-quiz-btn:hover{background:#2563eb;}
+
+.content-main{flex:1;min-width:0;padding:2.25rem 2.75rem;max-width:820px;}
+.mod-big-title{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:900;letter-spacing:-0.04em;margin-bottom:0.4rem;}
+.mod-big-sub{color:var(--text2);font-size:0.95rem;margin-bottom:2rem;line-height:1.55;}
+.content-footer{display:flex;justify-content:space-between;align-items:center;padding:1.75rem 0;border-top:1px solid var(--border);margin-top:1.75rem;gap:1rem;flex-wrap:wrap;}
+
+/* ── QUIZ ── */
+.quiz-wrap{max-width:740px;margin:0 auto;padding:2rem;}
+.quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap;}
+.quiz-title-h{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:800;letter-spacing:-0.03em;}
+.quiz-ctr{font-size:0.78rem;font-weight:600;color:var(--text3);background:var(--surface);padding:0.28rem 0.7rem;border-radius:99px;border:1px solid var(--border);}
+.qpbar{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-bottom:1.75rem;}
+.qpfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:99px;transition:width 0.4s;}
+.quiz-nav{display:flex;justify-content:flex-end;gap:0.65rem;margin-top:0.9rem;}
+
+/* ── RESULTS ── */
+.res-page{max-width:680px;margin:0 auto;padding:2.5rem 2rem;}
+.res-hero{text-align:center;margin-bottom:2rem;}
+.res-ring{width:130px;height:130px;border-radius:50%;margin:0 auto 1.1rem;display:flex;align-items:center;justify-content:center;flex-direction:column;border:4px solid var(--accent);}
+.res-pct{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:900;color:var(--accent);}
+.res-lbl{font-size:0.72rem;color:var(--text3);font-weight:600;}
+.res-title{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.35rem;}
+.res-sub{color:var(--text2);font-size:0.87rem;}
+.res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0.65rem;margin:1.5rem 0;}
+.res-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:0.9rem;text-align:center;}
+.rs-num{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:800;}
+.rs-lbl{font-size:0.7rem;color:var(--text3);font-weight:600;margin-top:0.15rem;}
+.rev-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;margin:1.25rem 0 0.75rem;color:var(--text2);}
+.rev-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:0.85rem;margin-bottom:0.55rem;}
+.rev-q{font-size:0.82rem;font-weight:600;margin-bottom:0.28rem;}
+.rev-a{font-size:0.79rem;color:var(--text2);margin-bottom:0.2rem;}
+.rev-exp{font-size:0.77rem;color:var(--text3);line-height:1.5;}
+.res-ctas{display:flex;gap:0.65rem;justify-content:center;flex-wrap:wrap;margin-top:1.75rem;}
+
+@media(max-width:900px){
+  .content-layout{flex-direction:column;}
+  .sidebar{width:100%;height:auto;position:relative;top:0;border-right:none;border-bottom:1px solid var(--border);}
+  .content-main{padding:1.35rem;}
+}
+</style>
+</head>
+<body>
+<nav id="nav"></nav>
+
+<!-- CONTENT VIEW -->
+<div id="content-view" class="content-layout page-wrap">
+  <div class="sidebar">
+    <button class="sb-back" id="sb-back-btn">← Voltar</button>
+    <div class="sb-mod-title" id="sb-mod-title"></div>
+    <div id="toc-container"></div>
+    <div class="sb-divider"></div>
+    <button class="sb-quiz-btn" onclick="startQuiz()">🧠 Iniciar Quiz →</button>
+  </div>
+  <div class="content-main" id="content-main"></div>
+</div>
+
+<!-- QUIZ VIEW -->
+<div id="quiz-view" class="hidden page-wrap">
+  <div class="quiz-wrap">
+    <div class="quiz-top">
+      <div class="quiz-title-h" id="quiz-title-h"></div>
+      <div class="quiz-ctr" id="quiz-ctr"></div>
+    </div>
+    <div class="qpbar"><div class="qpfill" id="qpfill" style="width:0%"></div></div>
+    <div id="quiz-q-area"></div>
+    <div id="quiz-res-area" class="hidden"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+                                                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // FIREBASE_CONFIG is defined in js/config.js loaded below as a regular script.
+  // We wait for DOMContentLoaded to ensure config.js has run first.
+  window.addEventListener('firebaseReady', () => {
+    const app  = initializeApp(window.FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    window._fbAuth            = auth;
+    window._fbDb              = db;
+    window._fbDoc             = doc;
+    window._fbGetDoc          = getDoc;
+    window._fbSetDoc          = setDoc;
+    window._fbGoogleProvider  = GoogleAuthProvider;
+    window._fbSignIn          = signInWithPopup;
+    window._fbSignOut         = signOut;
+    window._fbOnAuth          = onAuthStateChanged;
+
+    // Init auth listener immediately — no delay needed
+    if (typeof initFirebase === 'function') initFirebase();
+  });
+</script>
+<script src="js/config.js"></script>
+<script>window.FIREBASE_CONFIG=FIREBASE_CONFIG;window.dispatchEvent(new Event("firebaseReady"));</script>
+<script src="js/conteudos.js"></script>
+<script src="js/state.js"></script>
+<script src="js/gemini.js"></script>
+<script>
+renderNav('modulo');
+checkStreak();
+const sid = STATE.currentSubjectId;
+const mid = STATE.currentModuleId;
+const subj = SUBJECTS.find(s => s.id === sid);
+const mod  = subj?.modules.find(m => m.id === mid);
+
+if (!subj || !mod) { alert('Módulo não encontrado.'); history.back(); }
+
+// ── SETUP ──
+document.getElementById('sb-back-btn').onclick = () => window.location.href = 'subject.html';
+document.title = `ENEMaster — ${mod.title}`;
+
+// ── RENDER CONTENT ──
+const content = CONTEUDOS[mid];
+if (content) {
+  document.getElementById('sb-mod-title').textContent = mod.title;
+  document.getElementById('toc-container').innerHTML = content.sections.map(s =>
+    `<button class="toc-link" onclick="scrollTo2('${s.id}')">${s.title}</button>`
+  ).join('');
+
+  document.getElementById('content-main').innerHTML = `
+    <button onclick="window.location.href='subject.html'" style="background:none;border:none;font-size:0.78rem;color:var(--text3);cursor:pointer;margin-bottom:1rem;padding:0;display:flex;align-items:center;gap:0.4rem;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'">← ${subj.name}</button>
+    <div class="mod-big-title">${content.title}</div>
+    <div class="mod-big-sub">${content.subtitle}</div>
+    ${content.sections.map(s => `<div id="${s.id}">${s.content}</div>`).join('')}
+    <div class="content-footer">
+      <button class="btn btn-s" onclick="window.location.href='subject.html'">← Voltar</button>
+      <button class="btn btn-p btn-lg" onclick="startQuiz()">🧠 Iniciar Quiz →</button>
+    </div>`;
+} else {
+  document.getElementById('content-main').innerHTML = `
+    <div class="mod-big-title">${mod.title}</div>
+    <div class="mod-big-sub">${mod.summary}</div>
+    <div class="callout tip"><div class="c-icon">📚</div><div class="c-body"><div class="c-title">Conteúdo em desenvolvimento</div><div class="c-text">O conteúdo deste módulo está sendo elaborado. Use o quiz abaixo para testar seus conhecimentos!</div></div></div>
+    <div class="content-footer">
+      <button class="btn btn-s" onclick="window.location.href='subject.html'">← Voltar</button>
+      <button class="btn btn-p btn-lg" onclick="startQuiz()">🧠 Iniciar Quiz →</button>
+    </div>`;
+}
+
+function scrollTo2(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── QUIZ ENGINE ──
+let quizState = null;
+
+async function startQuiz() {
+  document.getElementById('content-view').classList.add('hidden');
+  document.getElementById('quiz-view').classList.remove('hidden');
+  document.getElementById('quiz-q-area').innerHTML = `
+    <div class="loading-box">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <p>Gerando questões com Gemini AI...</p>
+    </div>`;
+  document.getElementById('quiz-res-area').classList.add('hidden');
+  document.getElementById('quiz-q-area').classList.remove('hidden');
+  document.getElementById('quiz-title-h').textContent = mod.title + ' — Quiz';
+
+  try {
+    const questions = await generateQuiz(mod.title, subj.name);
+    quizState = { questions, current: 0, answers: {} };
+    renderQ();
+  } catch(e) {
+    document.getElementById('quiz-q-area').innerHTML = `
+      <div class="callout danger"><div class="c-icon">⚠️</div><div class="c-body">
+        <div class="c-title">Erro ao gerar questões</div>
+        <div class="c-text">${e.message.slice(0,200)}. Verifique sua conexão.</div>
+      </div></div>
+      <div style="display:flex;gap:0.75rem;margin-top:1rem;">
+        <button class="btn btn-p" onclick="startQuiz()">🔄 Tentar novamente</button>
+        <button class="btn btn-s" onclick="backToContent()">← Conteúdo</button>
+      </div>`;
+  }
+}
+
+function renderQ() {
+  const qs = quizState;
+  const q  = qs.questions[qs.current];
+  const total = qs.questions.length;
+  const letters = ['A','B','C','D','E'];
+  const ans = qs.answers[qs.current];
+
+  document.getElementById('quiz-ctr').textContent = `${qs.current+1} / ${total}`;
+  document.getElementById('qpfill').style.width = `${(qs.current/total)*100}%`;
+  document.getElementById('quiz-res-area').classList.add('hidden');
+  document.getElementById('quiz-q-area').classList.remove('hidden');
+
+  const optsHTML = q.options.map((opt, i) => {
+    let cls = '';
+    if (ans !== undefined) {
+      if (i === q.correct) cls = 'show-ok';
+      else if (i === ans)  cls = 's-err';
+    }
+    return `<button class="opt ${cls}" ${ans!==undefined?'disabled':''} onclick="selectAns(${i})">
+      <div class="opt-l">${letters[i]}</div>
+      <div class="opt-t">${opt}</div>
+    </button>`;
+  }).join('');
+
+  let expHTML = '';
+  if (ans !== undefined) {
+    const ok = ans === q.correct;
+    const altItems = q.options.map((_, i) => {
+      const txt = i === q.correct
+        ? '(Correta) ' + q.explanation.slice(0, 120) + '...'
+        : (q.wrong_exp[i] || '');
+      if (!txt) return '';
+      return `<div class="exp-alt ${i===q.correct?'r':'w'}">${letters[i]}) ${txt}</div>`;
+    }).join('');
+    expHTML = `<div class="exp-panel">
+      <div class="exp-res ${ok?'ok':'err'}">${ok ? '✅ Correto!' : '❌ Incorreto!'}</div>
+      <div class="exp-main">${q.explanation}</div>
+      <div class="exp-alts-t">Por que cada alternativa:</div>
+      ${altItems}
+    </div>`;
+  }
+
+  document.getElementById('quiz-q-area').innerHTML = `
+    <div class="q-card fade-in">
+      ${q.context ? `<div class="q-ctx">${q.context}</div>` : ''}
+      <div class="q-stem">${q.stem}</div>
+      <div class="opts">${optsHTML}</div>
+      ${expHTML}
+    </div>
+    ${ans !== undefined ? `<div class="quiz-nav">
+      ${qs.current < total-1
+        ? `<button class="btn btn-p" onclick="nextQ()">Próxima →</button>`
+        : `<button class="btn btn-g btn-lg" onclick="showResults()">Ver resultado →</button>`}
+    </div>` : ''}`;
+}
+
+function selectAns(idx) {
+  if (quizState.answers[quizState.current] !== undefined) return;
+  quizState.answers[quizState.current] = idx;
+  STATE.qa++;
+  if (idx === quizState.questions[quizState.current].correct) { STATE.qc++; addXP(15); }
+  else persistLocal();
+  saveCloud?.();
+  renderQ();
+}
+
+function nextQ() { quizState.current++; renderQ(); }
+
+function showResults() {
+  const qs = quizState;
+  const total   = qs.questions.length;
+  const correct = qs.questions.filter((_, i) => qs.answers[i] === qs.questions[i].correct).length;
+  const pct     = Math.round(correct / total * 100);
+  const passed  = pct >= 60;
+  const letters = ['A','B','C','D','E'];
+  const sc = pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--orange)' : 'var(--red)';
+  const msg = pct >= 80 ? 'Excelente domínio!' : pct >= 60 ? 'Bom resultado!' : 'Revise o conteúdo.';
+
+  if (passed && !STATE.completedModules[mid]) {
+    STATE.completedModules[mid] = true;
+    addXP(100);
+    saveCloud?.();
+  }
+
+  const revItems = qs.questions.map((q, i) => {
+    const ua = qs.answers[i]; const ok = ua === q.correct;
+    return `<div class="rev-item">
+      <div class="rev-q" style="color:${ok?'var(--green)':'var(--red)'}">${ok?'✅':'❌'} Q${i+1}: ${q.stem.slice(0,90)}${q.stem.length>90?'...':''}</div>
+      <div class="rev-a">Sua: <strong>${ua!==undefined?letters[ua]:'—'}</strong> | Correta: <strong>${letters[q.correct]}</strong></div>
+      <div class="rev-exp">${q.explanation.slice(0,150)}...</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('quiz-q-area').classList.add('hidden');
+  const res = document.getElementById('quiz-res-area');
+  res.classList.remove('hidden');
+  res.innerHTML = `<div class="res-page fade-up">
+    <div class="res-hero">
+      <div class="res-ring" style="border-color:${sc}">
+        <div class="res-pct" style="color:${sc}">${pct}%</div>
+        <div class="res-lbl">desempenho</div>
+      </div>
+      <div class="res-title">${msg}</div>
+      <div class="res-sub">${correct} de ${total} corretas</div>
+    </div>
+    <div class="res-stats">
+      <div class="res-stat"><div class="rs-num" style="color:var(--green)">${correct}</div><div class="rs-lbl">Acertos</div></div>
+      <div class="res-stat"><div class="rs-num" style="color:var(--red)">${total-correct}</div><div class="rs-lbl">Erros</div></div>
+      <div class="res-stat"><div class="rs-num" style="color:${sc}">${pct}%</div><div class="rs-lbl">Taxa</div></div>
+    </div>
+    ${passed
+      ? `<div class="callout ok"><div class="c-icon">🎉</div><div class="c-body"><div class="c-title">Módulo concluído! +100 XP</div><div class="c-text">Próximo módulo desbloqueado.</div></div></div>`
+      : `<div class="callout warn"><div class="c-icon">📚</div><div class="c-body"><div class="c-title">Mínimo 60% para avançar</div><div class="c-text">Revise o conteúdo e tente novamente.</div></div></div>`}
+    <div class="rev-title">Revisão das questões</div>
+    ${revItems}
+    <div class="res-ctas">
+      <button class="btn btn-s" onclick="startQuiz()">🔄 Refazer</button>
+      <button class="btn btn-s" onclick="backToContent()">📖 Revisar conteúdo</button>
+      <button class="btn btn-p" onclick="window.location.href='subject.html'">← Módulos</button>
+    </div>
+  </div>`;
+}
+
+function backToContent() {
+  document.getElementById('content-view').classList.remove('hidden');
+  document.getElementById('quiz-view').classList.add('hidden');
+  document.getElementById('quiz-q-area').classList.remove('hidden');
+}
+</script>
+</body>
+</html>

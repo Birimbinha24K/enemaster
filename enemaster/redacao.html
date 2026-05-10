@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENEMaster — Redação</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,400&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.red-page{max-width:1280px;margin:0 auto;padding:2rem;}
+.red-page h1{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:900;letter-spacing:-0.04em;margin-bottom:0.3rem;}
+.red-page > p{color:var(--text2);font-size:0.88rem;margin-bottom:1.5rem;}
+
+/* TABS */
+.red-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.75rem;overflow-x:auto;}
+.red-tab{padding:0.6rem 1.1rem;border:none;background:transparent;color:var(--text3);font-size:0.83rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Instrument Sans',sans-serif;white-space:nowrap;flex-shrink:0;}
+.red-tab:hover{color:var(--text);}
+.red-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.red-panel{display:none;}
+.red-panel.active{display:block;}
+
+/* GUIDE */
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.75rem;}
+.comp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem;}
+.comp-num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;font-family:'Fraunces',serif;font-size:0.92rem;font-weight:900;margin-bottom:0.75rem;}
+.comp-name{font-weight:700;font-size:0.9rem;margin-bottom:0.55rem;}
+.comp-desc{font-size:0.8rem;color:var(--text2);line-height:1.62;}
+.comp-pontos{margin-top:0.85rem;border-top:1px solid var(--border);padding-top:0.65rem;}
+.comp-pontos-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:0.35rem;}
+.pontos-row{display:flex;gap:0.35rem;flex-wrap:wrap;}
+.ponto-badge{font-size:0.68rem;font-weight:700;padding:0.15rem 0.45rem;border-radius:4px;background:var(--surface2);color:var(--text3);}
+
+/* EXEMPLO */
+.red-example{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:2rem;margin-bottom:1.5rem;}
+.rp{padding:1.1rem;border-radius:var(--r2);margin-bottom:0.85rem;font-size:0.9rem;line-height:1.82;color:var(--text2);font-family:'Georgia',serif;}
+.rp-lbl{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;display:block;font-family:'Instrument Sans',sans-serif;}
+.rp.intro{background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.12);}
+.rp.intro .rp-lbl{color:var(--accent);}
+.rp.dev1{background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.12);}
+.rp.dev1 .rp-lbl{color:var(--purple);}
+.rp.dev2{background:rgba(236,72,153,0.05);border:1px solid rgba(236,72,153,0.12);}
+.rp.dev2 .rp-lbl{color:var(--pink);}
+.rp.conc{background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.12);}
+.rp.conc .rp-lbl{color:var(--green);}
+.ann{display:inline;background:rgba(245,158,11,0.14);border-bottom:1px dashed var(--orange);cursor:help;}
+
+/* ESTRUTURA */
+.estrutura-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem;margin-bottom:1rem;}
+
+/* EDITOR */
+.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.35rem;}
+.editor-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem;}
+.editor-panel h3{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700;margin-bottom:0.85rem;letter-spacing:-0.02em;}
+.tema-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:0.9rem;margin-bottom:0.85rem;font-size:0.88rem;line-height:1.6;color:var(--text2);}
+.tema-box strong{color:var(--text);display:block;margin-bottom:0.28rem;}
+.red-ta{width:100%;min-height:320px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;color:var(--text);font-family:'Georgia',serif;font-size:0.95rem;line-height:1.85;resize:vertical;transition:border 0.2s;}
+.red-ta:focus{outline:none;border-color:var(--accent);}
+.red-meta{display:flex;justify-content:space-between;align-items:center;margin-top:0.45rem;flex-wrap:wrap;gap:0.5rem;}
+.red-wc{font-size:0.74rem;color:var(--text3);}
+.red-wc .ok{color:var(--green);}
+.red-wc .warn{color:var(--orange);}
+
+/* CORRECTION RESULT */
+.csg{display:grid;grid-template-columns:repeat(5,1fr);gap:0.45rem;margin-bottom:0.85rem;}
+.csc{background:var(--surface2);border-radius:var(--r2);padding:0.75rem 0.4rem;text-align:center;}
+.csc .sn{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;}
+.csc .sl{font-size:0.64rem;color:var(--text3);font-weight:600;margin-top:0.18rem;line-height:1.25;}
+.corr-total{text-align:center;padding:0.9rem;background:var(--surface2);border-radius:var(--r2);margin-bottom:0.85rem;}
+.corr-total-num{font-family:'Fraunces',serif;font-size:2.3rem;font-weight:900;}
+.corr-fb{font-size:0.85rem;color:var(--text2);line-height:1.72;margin-bottom:1rem;}
+.ccd{background:var(--surface2);border-radius:var(--r2);padding:0.9rem;margin-top:0.65rem;}
+.ccd-t{font-weight:700;font-size:0.82rem;margin-bottom:0.35rem;}
+.ccd-txt{font-size:0.79rem;color:var(--text2);line-height:1.58;}
+
+@media(max-width:900px){
+  .comp-grid,.editor-grid{grid-template-columns:1fr;}
+  .csg{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+<nav id="nav"></nav>
+
+<div class="page-wrap fade-up">
+<div class="red-page">
+  <h1>✍️ Redação ENEM</h1>
+  <p>Guia completo dos 5 critérios, exemplos nota 1000 e corretor inteligente com Gemini AI.</p>
+
+  <div class="red-tabs">
+    <button class="red-tab active" onclick="switchTab('guide',this)">📋 Guia Completo</button>
+    <button class="red-tab" onclick="switchTab('exemplo',this)">🏆 Exemplo Nota 1000</button>
+    <button class="red-tab" onclick="switchTab('estrutura',this)">📐 Estrutura</button>
+    <button class="red-tab" onclick="switchTab('editor',this)">🤖 Corretor IA</button>
+  </div>
+
+  <!-- ── GUIDE ── -->
+  <div class="red-panel active" id="red-panel-guide">
+    <h2 style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;margin-bottom:1.1rem;letter-spacing:-0.03em;">As 5 Competências do ENEM (0–200 pts cada)</h2>
+    <div class="comp-grid" id="comp-grid"></div>
+
+    <div class="divider"></div>
+    <h2 style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:700;margin-bottom:0.85rem;">🚫 Erros que Zeram a Redação</h2>
+    <div class="callout danger"><div class="c-icon">🚫</div><div class="c-body"><div class="c-title">Nota ZERO automática</div><div class="c-text">Fuga total ao tema · Texto em outro tipo (narrativo/descritivo) · Menos de 7 linhas · Cópia integral dos textos motivadores · Insulto ao avaliador · Em branco intencional</div></div></div>
+    <div class="callout warn"><div class="c-icon">⚠️</div><div class="c-body"><div class="c-title">Reduz muito a nota</div><div class="c-text">Tangenciar o tema (C2 máx 40 pts) · Proposta de intervenção ausente ou violenta (C5 = 0) · Texto com 7–10 linhas apenas · Muitos desvios gramaticais graves</div></div></div>
+
+    <div class="divider"></div>
+    <h2 style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:700;margin-bottom:0.85rem;">💡 Estratégias de Alto Desempenho</h2>
+    <div id="estrategias-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;"></div>
+  </div>
+
+  <!-- ── EXEMPLO ── -->
+  <div class="red-panel hidden" id="red-panel-exemplo">
+    <div class="red-example">
+      <h3 style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:700;margin-bottom:0.3rem;">🏆 Redação Nota 1000 — Comentada</h3>
+      <p style="font-size:0.8rem;color:var(--text3);margin-bottom:1.35rem;">Tema: Desafios para a valorização de comunidades e povos tradicionais no Brasil</p>
+      <div class="rp intro">
+        <span class="rp-lbl">📘 INTRODUÇÃO — Contextualização + Tese</span>
+        Em "Os Sertões", Euclides da Cunha retrata com precisão cirúrgica a violência do Estado brasileiro contra comunidades marginalizadas. <span class="ann" title="📌 Repertório sociocultural = C3 alta">Mais de um século depois, a realidade dos povos tradicionais — indígenas, quilombolas, ribeirinhos e caiçaras — ainda ecoa essa brutalidade histórica</span>, evidenciando que o projeto de nação brasileiro foi construído sobre a invisibilização sistemática de suas raízes mais profundas. Diante disso, compreender os entraves que impedem a valorização dessas comunidades é urgente para a construção de uma sociedade verdadeiramente plural e democrática.
+      </div>
+      <div class="rp dev1">
+        <span class="rp-lbl">💜 DESENVOLVIMENTO 1 — 1º Argumento + Evidência + Análise</span>
+        Um dos principais desafios é a fragilidade dos mecanismos legais de proteção territorial. <span class="ann" title="📌 Dado concreto fortalece a argumentação C3">Segundo a Funai, mais de 60% das terras indígenas ainda aguardam demarcação oficial</span>, tornando essas populações vulneráveis ao avanço do agronegócio e do garimpo ilegal. Sob a perspectiva do filósofo Henri Lefebvre, o território não é apenas espaço físico, mas dimensão identitária: ao privatizarem-se as terras tradicionais, dissolve-se o elo entre esses povos e sua cultura, língua e espiritualidade. Portanto, a morosidade estatal representa, na prática, uma forma contemporânea de etnocídio silencioso.
+      </div>
+      <div class="rp dev2">
+        <span class="rp-lbl">🩷 DESENVOLVIMENTO 2 — 2º Argumento (ângulo diferente)</span>
+        Ademais, a ausência de políticas de inclusão sociocultural aprofunda a invisibilidade dessas comunidades. A Base Nacional Comum Curricular, apesar de mencionar a diversidade étnica, raramente se traduz em currículo que contemple as epistemologias indígenas e quilombolas, perpetuando o eurocentrismo na educação formal. Como consequência, jovens pertencentes a esses grupos crescem sem referências identitárias positivas, tornando-se mais vulneráveis ao abandono escolar. Outrossim, a sub-representação política dessas populações no Congresso Nacional configura um déficit democrático estrutural.
+      </div>
+      <div class="rp conc">
+        <span class="rp-lbl">💚 CONCLUSÃO — Tese retomada + Proposta de Intervenção (5 elementos)</span>
+        Depreende-se, portanto, que a valorização dos povos tradicionais exige enfrentamento simultâneo da insegurança territorial e da invisibilidade cultural. Para tanto, <span class="ann" title="📌 5 ELEMENTOS: Agente + Ação + Meio + Finalidade + Detalhamento">o Estado brasileiro (agente), por meio do Ministério dos Povos Indígenas em parceria com os Ministérios da Educação e da Cultura (meio), deve implementar um Programa Nacional de Territórios e Identidades Tradicionais (ação), a fim de garantir demarcações aceleradas e etnoeducação obrigatória nas escolas públicas (finalidade), com investimento de 0,5% do orçamento da União anualmente (detalhamento)</span> — consolidando, assim, uma cidadania que celebre a pluralidade fundante do Brasil.
+      </div>
+    </div>
+    <div class="callout ok"><div class="c-icon">✅</div><div class="c-body"><div class="c-title">Por que esta redação é nota 1000?</div><div class="c-text">
+      <strong>C1 (200):</strong> Domínio pleno — sem nenhum desvio gramatical ou ortográfico.<br>
+      <strong>C2 (200):</strong> Tema desenvolvido com excelência no tipo dissertativo-argumentativo.<br>
+      <strong>C3 (200):</strong> Repertório rico (Euclides da Cunha, Henri Lefebvre, dados Funai) com autoria e consistência argumentativa.<br>
+      <strong>C4 (200):</strong> Conectivos variados e corretos: "Ademais", "Outrossim", "Portanto", "Depreende-se", "Como consequência".<br>
+      <strong>C5 (200):</strong> Proposta explicitamente completa com os 5 elementos: agente, ação, meio, finalidade e detalhamento.
+    </div></div></div>
+  </div>
+
+  <!-- ── ESTRUTURA ── -->
+  <div class="red-panel hidden" id="red-panel-estrutura">
+    <p style="color:var(--text2);font-size:0.9rem;margin-bottom:1.5rem;line-height:1.65;">A redação dissertativa-argumentativa do ENEM tem estrutura fixa em 4 parágrafos. Domine essa estrutura e o restante é aprofundar o conteúdo.</p>
+
+    <div class="estrutura-block" style="border-left:3px solid var(--accent);">
+      <div style="display:flex;align-items:center;gap:0.65rem;margin-bottom:0.85rem;">
+        <div style="width:30px;height:30px;border-radius:7px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-family:'Fraunces',serif;">1</div>
+        <div style="font-weight:700;color:var(--accent);">Introdução (7–10 linhas)</div>
+      </div>
+      <div class="step"><div class="step-n">1</div><div class="step-t">Inicie com <strong>repertório sociocultural</strong>: dado estatístico, citação filosófica, evento histórico, obra literária, lei. <em>Nunca</em> comece com "Desde os primórdios" ou "No mundo globalizado".</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t">Desenvolva o <strong>contexto</strong>: por que o tema é relevante? Qual o problema central?</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t">Apresente a <strong>tese</strong> claramente: qual é sua posição sobre o tema? Deve ser direta e inequívoca.</div></div>
+    </div>
+
+    <div class="estrutura-block" style="border-left:3px solid var(--purple);">
+      <div style="display:flex;align-items:center;gap:0.65rem;margin-bottom:0.85rem;">
+        <div style="width:30px;height:30px;border-radius:7px;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-family:'Fraunces',serif;">2</div>
+        <div style="font-weight:700;color:var(--purple);">Desenvolvimento 1 (8–12 linhas)</div>
+      </div>
+      <div class="step"><div class="step-n">1</div><div class="step-t"><strong>1º argumento</strong> que sustenta a tese</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Exemplo concreto</strong>: dado, referência, caso real que evidencia o argumento</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Análise</strong>: conecte o exemplo à tese. Mostre por que isso é um problema. Inicie com: "Nesse contexto...", "À luz disso...", "Sob essa perspectiva..."</div></div>
+    </div>
+
+    <div class="estrutura-block" style="border-left:3px solid var(--pink);">
+      <div style="display:flex;align-items:center;gap:0.65rem;margin-bottom:0.85rem;">
+        <div style="width:30px;height:30px;border-radius:7px;background:var(--pink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-family:'Fraunces',serif;">3</div>
+        <div style="font-weight:700;color:var(--pink);">Desenvolvimento 2 (8–12 linhas)</div>
+      </div>
+      <div class="step"><div class="step-n">1</div><div class="step-t"><strong>2º argumento</strong> — obrigatoriamente diferente do 1º. Aborde outro ângulo do problema.</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Outro exemplo</strong> diferente do usado no Dev 1</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Análise</strong> que reforça a tese. Inicie com: "Ademais...", "Outrossim...", "Além disso..."</div></div>
+    </div>
+
+    <div class="estrutura-block" style="border-left:3px solid var(--green);">
+      <div style="display:flex;align-items:center;gap:0.65rem;margin-bottom:0.85rem;">
+        <div style="width:30px;height:30px;border-radius:7px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-family:'Fraunces',serif;">4</div>
+        <div style="font-weight:700;color:var(--green);">Conclusão (6–9 linhas)</div>
+      </div>
+      <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Retome a tese</strong> com outras palavras — não copie a introdução</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t">Síntese breve dos argumentos</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Proposta de Intervenção</strong> completa com 5 elementos obrigatórios</div></div>
+    </div>
+
+    <div class="callout tip"><div class="c-icon">🏛️</div><div class="c-body">
+      <div class="c-title">Fórmula da Proposta de Intervenção Nota 200</div>
+      <div class="c-text">
+        <strong>[AGENTE]</strong>, por meio de <strong>[MEIO]</strong>, deve <strong>[AÇÃO]</strong>, a fim de <strong>[FINALIDADE]</strong>, com <strong>[DETALHAMENTO]</strong>.<br><br>
+        <em>Exemplo: "O Ministério da Saúde (agente), por meio de campanhas educativas em parceria com escolas públicas (meio), deve implementar programas de prevenção ao suicídio (ação), a fim de reduzir os índices de automutilação entre jovens (finalidade), com verba federal prevista no orçamento anual e capacitação de psicólogos voluntários (detalhamento)."</em>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── EDITOR ── -->
+  <div class="red-panel hidden" id="red-panel-editor">
+    <div class="editor-grid">
+      <!-- LEFT: WRITE -->
+      <div class="editor-panel">
+        <h3>Escreva sua Redação</h3>
+        <div class="tema-box">
+          <strong id="tema-label">Tema atual:</strong>
+          <span id="tema-text"></span>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+          <button class="btn btn-s btn-sm" onclick="novoTema()">🎲 Novo tema</button>
+          <button class="btn btn-s btn-sm" onclick="verTemas()">📋 Ver todos</button>
+        </div>
+        <textarea class="red-ta" id="red-editor"
+          placeholder="Escreva sua redação aqui. Estrutura: Introdução → Desenvolvimento 1 → Desenvolvimento 2 → Conclusão com proposta de intervenção.
+
+Dicas:
+• Mínimo 7 linhas, máximo 30 linhas
+• Use conectivos variados: Ademais, Outrossim, Por conseguinte, Destarte
+• Nunca use 1ª pessoa: 'eu acho', 'na minha opinião'
+• Inclua repertório sociocultural na introdução"
+          oninput="updateWC()"></textarea>
+        <div class="red-meta">
+          <div class="red-wc" id="red-wc">0 palavras · 0 linhas</div>
+          <button class="btn btn-p" id="corr-btn" onclick="corrigir()">🤖 Corrigir com IA</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: RESULT -->
+      <div class="editor-panel">
+        <h3>Resultado da Correção</h3>
+        <div id="corr-placeholder" style="text-align:center;padding:3rem 1rem;color:var(--text3);">
+          <div style="font-size:3rem;margin-bottom:0.85rem;">📝</div>
+          <p style="font-size:0.87rem;line-height:1.65;">Escreva sua redação ao lado e clique em <strong style="color:var(--text);">Corrigir com IA</strong> para receber avaliação detalhada nos 5 critérios do ENEM, com sugestões específicas de melhoria.</p>
+        </div>
+        <div id="corr-result" class="hidden"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /red-page -->
+</div><!-- /page-wrap -->
+
+<!-- Modal de temas -->
+<div id="temas-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:2000;display:flex;align-items:center;justify-content:center;padding:2rem;" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:2rem;max-width:560px;width:100%;max-height:80vh;overflow-y:auto;">
+    <h3 style="font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;margin-bottom:1rem;">Temas disponíveis</h3>
+    <div id="temas-list"></div>
+    <button class="btn btn-s btn-sm" style="margin-top:1rem;" onclick="document.getElementById('temas-modal').classList.add('hidden')">Fechar</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+                                                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // FIREBASE_CONFIG is defined in js/config.js loaded below as a regular script.
+  // We wait for DOMContentLoaded to ensure config.js has run first.
+  window.addEventListener('firebaseReady', () => {
+    const app  = initializeApp(window.FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    window._fbAuth            = auth;
+    window._fbDb              = db;
+    window._fbDoc             = doc;
+    window._fbGetDoc          = getDoc;
+    window._fbSetDoc          = setDoc;
+    window._fbGoogleProvider  = GoogleAuthProvider;
+    window._fbSignIn          = signInWithPopup;
+    window._fbSignOut         = signOut;
+    window._fbOnAuth          = onAuthStateChanged;
+
+    // Init auth listener immediately — no delay needed
+    if (typeof initFirebase === 'function') initFirebase();
+  });
+</script>
+<script src="js/config.js"></script>
+<script>window.FIREBASE_CONFIG=FIREBASE_CONFIG;window.dispatchEvent(new Event("firebaseReady"));</script>
+<script src="js/conteudos.js"></script>
+<script src="js/state.js"></script>
+<script src="js/gemini.js"></script>
+<script>
+renderNav('redacao');
+checkStreak();
+// ── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.red-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.red-panel').forEach(p => { p.classList.remove('active'); p.classList.add('hidden'); });
+  const p = document.getElementById('red-panel-' + name);
+  p.classList.remove('hidden'); p.classList.add('active');
+}
+
+// ── COMPETENCIAS ─────────────────────────────────────────────────────────────
+const COMPS = [
+  { n:'C1', color:'var(--accent)', bg:'rgba(59,130,246,0.08)', border:'rgba(59,130,246,0.15)',
+    name:'Domínio da norma culta',
+    desc:'Gramática, ortografia, acentuação, pontuação e construção sintática correta. Erros graves (concordância, regência, crase obrigatória) reduzem drasticamente a nota.',
+    pontos:['0','40','80','120','160','200'] },
+  { n:'C2', color:'var(--orange)', bg:'rgba(245,158,11,0.06)', border:'rgba(245,158,11,0.15)',
+    name:'Compreensão da proposta',
+    desc:'Texto dissertativo-argumentativo desenvolvendo o tema proposto. Fuga ao tema = nota zero. Tangenciar o tema limita C2 a 40 pontos.',
+    pontos:['0','40','80','120','160','200'] },
+  { n:'C3', color:'var(--purple)', bg:'rgba(139,92,246,0.06)', border:'rgba(139,92,246,0.15)',
+    name:'Argumentação e repertório',
+    desc:'Selecionar e organizar informações com autoria. Repertório sociocultural (dados, citações, referências históricas, filosóficas) demonstra consistência.',
+    pontos:['0','40','80','120','160','200'] },
+  { n:'C4', color:'var(--green)', bg:'rgba(16,185,129,0.06)', border:'rgba(16,185,129,0.15)',
+    name:'Coesão textual',
+    desc:'Articular o texto com conectivos, pronomes e referências. Varie: "ademais, outrossim, por conseguinte, destarte, nesse contexto, em vista disso".',
+    pontos:['0','40','80','120','160','200'] },
+  { n:'C5', color:'var(--pink)', bg:'rgba(236,72,153,0.06)', border:'rgba(236,72,153,0.15)',
+    name:'Proposta de intervenção',
+    desc:'Proposta viável, detalhada e respeitosa aos direitos humanos com 5 elementos: Agente + Ação + Meio + Finalidade + Detalhamento.',
+    pontos:['0','40','80','120','160','200'] },
+];
+
+document.getElementById('comp-grid').innerHTML = COMPS.map(c => `
+  <div class="comp-card" style="border-color:${c.border};background:${c.bg};">
+    <div class="comp-num" style="background:${c.bg};color:${c.color};">${c.n}</div>
+    <div class="comp-name" style="color:${c.color};">${c.name}</div>
+    <div class="comp-desc">${c.desc}</div>
+    <div class="comp-pontos">
+      <div class="comp-pontos-title">Níveis de pontuação</div>
+      <div class="pontos-row">${c.pontos.map(p => `<span class="ponto-badge" style="color:${c.color}">${p}pts</span>`).join('')}</div>
+    </div>
+  </div>`).join('');
+
+// ── ESTRATEGIAS ───────────────────────────────────────────────────────────────
+const ESTS = [
+  {i:'🎯',t:'Defina a tese',d:'Seja claro sobre sua posição logo ao final da introdução. A tese é retomada na conclusão.'},
+  {i:'📚',t:'Repertório sociocultural',d:'Filósofos, dados do IBGE/OMS, eventos históricos, obras literárias. Eleva C3 significativamente.'},
+  {i:'🔗',t:'Varie os conectivos',d:'"Ademais, outrossim, por conseguinte, destarte, nesse contexto, em vista disso, logo, portanto".'},
+  {i:'✋',t:'Evite 1ª pessoa',d:'Nunca use "eu acho". Prefira: "constata-se, nota-se, percebe-se, é possível afirmar, depreende-se".'},
+  {i:'⏱️',t:'Gerencie o tempo',d:'5 min planejando → 40 min escrevendo → 5 min revisando. Total: 50 min por redação.'},
+  {i:'📏',t:'Respeite o tamanho',d:'Mínimo 7 linhas para não zerar. Ideal: 25–30 linhas. Mais de 30 linhas não são avaliadas.'},
+];
+document.getElementById('estrategias-grid').innerHTML = ESTS.map(e =>
+  `<div class="concept"><div class="concept-t">${e.i} ${e.t}</div><p>${e.d}</p></div>`
+).join('');
+
+// ── TEMAS ─────────────────────────────────────────────────────────────────────
+const TEMAS = [
+  'O impacto das fake news na democracia brasileira',
+  'Desafios para a inclusão digital no Brasil',
+  'A saúde mental dos jovens na era das redes sociais',
+  'Violência contra a mulher no Brasil: causas e soluções',
+  'Desigualdade social e acesso à educação no Brasil',
+  'O papel do Estado no combate às mudanças climáticas',
+  'Desafios da mobilidade urbana nas grandes cidades',
+  'A questão indígena e os direitos territoriais no Brasil',
+  'Impactos da automação no mercado de trabalho',
+  'Segurança alimentar e combate à fome no Brasil',
+  'A crise hídrica e o acesso à água potável',
+  'Desafios da reinserção social do egresso do sistema prisional',
+  'O estigma das doenças mentais na sociedade brasileira',
+  'Invisibilidade da população em situação de rua',
+  'O impacto da cultura do cancelamento na liberdade de expressão',
+  'A exploração do trabalho infantil no Brasil',
+  'Desafios da educação pública brasileira no século XXI',
+  'A violência no campo e os conflitos fundiários',
+  'Impactos do racismo estrutural na sociedade brasileira',
+  'A crise climática e os desastres naturais no Brasil',
+];
+
+let temaIdx = Math.floor(Math.random() * TEMAS.length);
+document.getElementById('tema-text').textContent = TEMAS[temaIdx];
+
+function novoTema() {
+  temaIdx = (temaIdx + 1) % TEMAS.length;
+  document.getElementById('tema-text').textContent = TEMAS[temaIdx];
+  document.getElementById('red-editor').value = '';
+  document.getElementById('red-wc').innerHTML = '0 palavras · 0 linhas';
+  document.getElementById('corr-result').classList.add('hidden');
+  document.getElementById('corr-placeholder').classList.remove('hidden');
+}
+
+function verTemas() {
+  document.getElementById('temas-list').innerHTML = TEMAS.map((t, i) =>
+    `<div style="padding:0.5rem 0;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+      <span style="font-size:0.85rem;color:var(--text2);">${i+1}. ${t}</span>
+      <button class="btn btn-s btn-sm" onclick="usarTema(${i})">Usar</button>
+    </div>`
+  ).join('');
+  document.getElementById('temas-modal').classList.remove('hidden');
+}
+
+function usarTema(i) {
+  temaIdx = i;
+  document.getElementById('tema-text').textContent = TEMAS[temaIdx];
+  document.getElementById('red-editor').value = '';
+  updateWC();
+  document.getElementById('corr-result').classList.add('hidden');
+  document.getElementById('corr-placeholder').classList.remove('hidden');
+  document.getElementById('temas-modal').classList.add('hidden');
+}
+
+function updateWC() {
+  const text  = document.getElementById('red-editor').value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const lines = text.trim() ? text.split('\n').filter(l => l.trim()).length : 0;
+  const wCls  = (words < 100 || words > 400) ? 'warn' : 'ok';
+  const lCls  = (lines < 7  || lines > 30)  ? 'warn' : 'ok';
+  document.getElementById('red-wc').innerHTML =
+    `<span class="${wCls}">${words} palavras</span> · <span class="${lCls}">${lines} linhas</span>`;
+}
+
+// ── CORRECTOR ────────────────────────────────────────────────────────────────
+async function corrigir() {
+  const text = document.getElementById('red-editor').value.trim();
+  if (!text || text.length < 150) {
+    alert('Escreva uma redação mais completa antes de corrigir (mínimo ~150 caracteres).');
+    return;
+  }
+  const tema = TEMAS[temaIdx];
+  const btn  = document.getElementById('corr-btn');
+  btn.disabled = true; btn.textContent = '⏳ Corrigindo...';
+
+  document.getElementById('corr-placeholder').classList.add('hidden');
+  const res = document.getElementById('corr-result');
+  res.classList.remove('hidden');
+  res.innerHTML = `<div class="loading-box"><div class="dots"><span></span><span></span><span></span></div><p>Analisando nos 5 critérios do ENEM...<br><span style="font-size:0.8rem;color:var(--text3);">Isso pode levar alguns segundos</span></p></div>`;
+
+  try {
+    const r = await corrigirRedacao(text, tema);
+    const keys   = ['c1','c2','c3','c4','c5'];
+    const colors = ['var(--accent)','var(--orange)','var(--purple)','var(--green)','var(--pink)'];
+    const sc = r.total >= 800 ? 'var(--green)' : r.total >= 500 ? 'var(--orange)' : 'var(--red)';
+
+    res.innerHTML = `
+      <div class="csg">
+        ${keys.map((k, i) => `<div class="csc">
+          <div class="sn" style="color:${colors[i]}">${r[k]?.nota ?? 0}</div>
+          <div class="sl">${k.toUpperCase()}</div>
+        </div>`).join('')}
+      </div>
+      <div class="corr-total">
+        <div class="corr-total-num" style="color:${sc}">${r.total}<span style="font-size:1rem;font-weight:400;color:var(--text3);"> / 1000</span></div>
+        <div style="font-size:0.77rem;color:var(--text3);font-weight:600;">${r.nivel || ''}</div>
+      </div>
+      <div class="corr-fb">${(r.feedback_geral || '').replace(/\n/g, '<br>')}</div>
+
+      ${keys.map((k, i) => r[k] ? `
+        <div class="ccd" style="border-left:3px solid ${colors[i]};">
+          <div class="ccd-t" style="color:${colors[i]}">${k.toUpperCase()} — ${r[k].titulo || ''} — ${r[k].nota ?? 0}/200</div>
+          ${r[k].positivos  ? `<div class="ccd-txt" style="color:var(--green);margin-bottom:0.3rem;">✅ ${r[k].positivos}</div>` : ''}
+          ${r[k].melhorias  ? `<div class="ccd-txt">📝 ${r[k].melhorias}</div>` : ''}
+          ${r[k].erros?.length ? `<div class="ccd-txt" style="margin-top:0.3rem;">${r[k].erros.map(e=>`<div style="padding:0.2rem 0;border-bottom:1px solid var(--border)">⚠️ ${e}</div>`).join('')}</div>` : ''}
+          ${r[k].sugestoes_repertorio?.length ? `<div class="ccd-txt" style="margin-top:0.35rem;">💡 Repertório sugerido: ${r[k].sugestoes_repertorio.join(' · ')}</div>` : ''}
+          ${r[k].conectivos_sugeridos?.length ? `<div class="ccd-txt" style="margin-top:0.35rem;">🔗 Conectivos: ${r[k].conectivos_sugeridos.join(' · ')}</div>` : ''}
+          ${r[k].proposta_modelo ? `<div class="ccd-txt" style="color:var(--green);background:rgba(16,185,129,0.05);padding:0.5rem;border-radius:6px;margin-top:0.35rem;">🏛️ Proposta modelo: ${r[k].proposta_modelo}</div>` : ''}
+        </div>` : '').join('')}
+
+      ${r.proximo_passo ? `<div class="callout tip mt-2"><div class="c-icon">🎯</div><div class="c-body"><div class="c-title">Próximo passo</div><div class="c-text">${r.proximo_passo}</div></div></div>` : ''}
+      <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button class="btn btn-s btn-sm" onclick="novoTema()">🎲 Novo tema</button>
+        <button class="btn btn-s btn-sm" onclick="document.getElementById('red-editor').value='';updateWC();document.getElementById('corr-result').classList.add('hidden');document.getElementById('corr-placeholder').classList.remove('hidden');">✏️ Reescrever</button>
+      </div>`;
+
+    addXP(20);
+    saveCloud?.();
+  } catch(e) {
+    res.innerHTML = `<div class="callout danger"><div class="c-icon">⚠️</div><div class="c-body"><div class="c-title">Erro na correção</div><div class="c-text">${e.message.slice(0,200)}. Verifique sua conexão e tente novamente.</div></div></div>
+    <button class="btn btn-s btn-sm" style="margin-top:0.75rem;" onclick="corrigir()">🔄 Tentar novamente</button>`;
+  }
+
+  btn.disabled = false; btn.textContent = '🤖 Corrigir com IA';
+}
+</script>
+</body>
+</html>
